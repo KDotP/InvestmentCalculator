@@ -19,6 +19,7 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
     private static InputManager manager;
+    private static FileManager fileManager;
 
     private static final boolean VERBOSE = false; // For testing, should be false by default
 
@@ -231,6 +232,12 @@ public class Main extends Application {
                 System.out.println("Results: " + results);
             }
         });
+
+        // Save config button
+        saveConfigButton.setOnAction(event -> {
+            Stage test = fileManager.savePopup(initialInvestment, bondDuration, interestRate, investmentDuration);
+            test.show();
+        });        
     }
 
     private double getApy() {
@@ -249,6 +256,7 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         manager = new InputManager();
+        fileManager = new FileManager();
         launch(args);
     }
 }
