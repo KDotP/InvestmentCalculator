@@ -24,9 +24,11 @@ public class Main extends Application {
 
     // Default values
     private static double initialInvestment = 1000; // $1000
-    private static double bondDuration = 2; // Every 6 Months
+    private static double bondDuration = 0.5; // Every 6 Months
     private static double interestRate = 0.05; // 5%
     private static double investmentDuration = 3; // 3 Years
+
+
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -106,8 +108,6 @@ public class Main extends Application {
         NumberAxis xAxis = new NumberAxis(); // Time axis
         NumberAxis yAxis = new NumberAxis(); // Money axis
         LineChart<Number, Number> chart = new LineChart<>(xAxis, yAxis);
-        XYChart.Series<Number, Number> series = new XYChart.Series<>();
-
         parent.setCenter(chart);
 
         // Activate the scene
@@ -135,9 +135,9 @@ public class Main extends Application {
         // Bond Duration
         bondDurationField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.equals("")) {
-                bondDuration = 2;
+                bondDuration = 0.5;
             } else {
-                bondDuration = manager.convertInvserseTime(newValue);
+                bondDuration = manager.convertTime(newValue);
             }
             if (VERBOSE) {
                 System.out.println("Bond Duration Changed: " + bondDuration);
@@ -184,7 +184,7 @@ public class Main extends Application {
 
         // Calculate Results
         calculateButton.setOnAction(event -> {
-            double results = manager.calculate(initialInvestment, interestRate, investmentDuration, bondDuration);
+            
 
             // This is what happens when you choose a bad way a calculating stuff early on and now you have to live with your mistakes
             String totalDurationString;
@@ -196,6 +196,7 @@ public class Main extends Application {
             returnText.setText("Expected Return After " + manager.interpString(totalDurationString) + ":");
 
             // This is not a good way to do this but my brain has shut off
+            // Calculate number of times to run chart loop
             int runs = 0;
             String bondDurationString;
             if (bondDurationField.getText().equals("")) {
@@ -207,9 +208,25 @@ public class Main extends Application {
             if (VERBOSE) {
                 System.out.println("Running " + runs + " times");
             }
-            
-            resultText.setText("$" + results);
 
+            // Reset chart
+            chart.getData().clear();
+            double results = initialInvestment; // If it runs 0 times, you still have your initial investment
+            XYChart.Series<Number, Number> newSeries = new XYChart.Series<>();
+
+            newSeries.getData().add(new XYChart.Data<>(0, initialInvestment)); // Starting data point
+
+            // Populate chart
+            for (int i = 1; i <= runs; i++) {
+                results = manager.calculate(initialInvestment, interestRate, (investmentDuration / runs) * i, bondDuration); // Last run should yield correct final results
+                newSeries.getData().add(new XYChart.Data<>(i, results));
+            }
+            
+            chart.getData().add(newSeries);
+
+            // Final results
+            results = manager.calculate(initialInvestment, interestRate, investmentDuration, bondDuration);
+            resultText.setText("$" + results);
             if (VERBOSE) {
                 System.out.println("Results: " + results);
             }

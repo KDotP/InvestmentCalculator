@@ -52,6 +52,7 @@ public class InputManager {
         // y = input
     }
 
+    // Legacy
     double convertInvserseTime(String input) {
         try {
             int inputLength = input.toCharArray().length;
@@ -82,8 +83,8 @@ public class InputManager {
         // y = input
     }
 
-    int totalRuns(double duration, double frequency) {
-        double runs = duration /  frequency;
+    int totalRuns(double investmentDuration, double bondDuration) {
+        double runs = investmentDuration /  bondDuration;
         int intRuns = (int) Math.floor(runs);
 
         return intRuns;
@@ -108,7 +109,7 @@ public class InputManager {
     }
 
     double calculate(double initialInvestment, double interestRate, double investmentDuration, double bondDuration) {
-        double finalAmount = initialInvestment * Math.pow(1 + (interestRate / bondDuration), bondDuration * investmentDuration);
+        double finalAmount = initialInvestment * Math.pow(1 + (interestRate / (1 / bondDuration)), (1 / bondDuration) * investmentDuration); // 1 / bondDuration is for the number of times per year
         // Round to 2 decimals
         finalAmount *= 100;
         finalAmount = Math.floor(finalAmount);
