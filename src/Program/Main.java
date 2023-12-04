@@ -237,7 +237,13 @@ public class Main extends Application {
         saveConfigButton.setOnAction(event -> {
             Stage test = fileManager.savePopup(initialInvestment, bondDuration, interestRate, investmentDuration);
             test.show();
-        });        
+        });
+
+        // Load config button
+        loadConfigButton.setOnAction(event -> {
+            Stage test = fileManager.loadPopup();
+            test.show();
+        });   
     }
 
     private double getApy() {
@@ -245,6 +251,7 @@ public class Main extends Application {
         return 0;
     }
 
+    // Create a text field with specific parameters because it's done multiple times
     private static TextField createField(String promt, int width) {
         TextField returnField = new TextField();
         returnField.setMaxWidth(width);

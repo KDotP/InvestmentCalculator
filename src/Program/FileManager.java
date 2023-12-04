@@ -1,11 +1,14 @@
 package Program;
 
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Scanner;
 
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -16,31 +19,24 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class FileManager {
+    private final String DEFAULT_FILE_NAME = "save";
+
     public FileManager() {
     }
 
     // Save to default file location
-    void saveToFile(double initialInvestment, double bondDuration, double interestRate, double investmentDuration) {
-        try {
-            String pathString = getSavePath() + "\\default.txt";
-
-            BufferedWriter writer = new BufferedWriter(new FileWriter(pathString));
-            writer.write("Test");
-            System.out.println("Wrote to file");
-            writer.close();
-        } catch (Exception e) {
-            System.out.println("Failed to save to file");
-            e.printStackTrace();
-        }
+    public void saveToFile(double initialInvestment, double bondDuration, double interestRate, double investmentDuration) {
+        saveToFile(initialInvestment, bondDuration, interestRate, investmentDuration, DEFAULT_FILE_NAME);
     }
 
-    void saveToFile(double initialInvestment, double bondDuration, double interestRate, double investmentDuration, String fileName) {
+    // Save to location with specified name
+    public void saveToFile(double initialInvestment, double bondDuration, double interestRate, double investmentDuration, String fileName) {
         try {
             String pathString = getSavePath() + "\\" + fileName + ".txt";
 
             BufferedWriter writer = new BufferedWriter(new FileWriter(pathString));
-            writer.write(initialInvestment + "|" + bondDuration + "|" + interestRate + "|" + investmentDuration);
-            System.out.println("Wrote to file");
+            writer.write(initialInvestment + "\n" + bondDuration + "\n" + interestRate + "\n" + investmentDuration);
+            System.out.println("Successfully saved to " + pathString);
             writer.close();
         } catch (IOException e) {
             System.out.println("Failed to save to file");
@@ -48,6 +44,7 @@ public class FileManager {
         }
     }
 
+    // Get the path of Investment Calculator folder, then navigate to the saves folder
     private String getSavePath() {
         try {
             // https://stackoverflow.com/questions/320542/how-to-get-the-path-of-a-running-jar-file
@@ -64,6 +61,7 @@ public class FileManager {
         }
     }
 
+    // Pop Up Menu for Saving to Specific Location
     public Stage savePopup(double initialInvestment, double bondDuration, double interestRate, double investmentDuration) {
         Stage popup = new Stage();
         popup.setTitle("Save Config to File");
@@ -92,6 +90,54 @@ public class FileManager {
             popup.close();
         });     
 
+        return popup;
+    }
+
+    public Double[] loadFromFile() {
+        return loadFromFile(DEFAULT_FILE_NAME);
+    }
+
+    public Double[] loadFromFile(String fileName) {
+        String savePath = getSavePath() + "\\" + fileName + ".txt";
+        Double[] doubleArray = new Double[4];
+
+        try {
+            Scanner reader = new Scanner(new File(savePath));
+            for (int i = 0; i < doubleArray.length; i++) {
+                doubleArray[i] = reader.nextDouble();
+            }
+
+            System.out.println("Successfully loaded from " + savePath);
+            return doubleArray;
+        } catch (FileNotFoundException e) {
+            System.out.println("Could Not Find File: " + savePath);
+            e.printStackTrace();
+            return null;
+        }        
+    }
+
+    // Pop Up Menu for Loading a Specific File
+    public Stage loadPopup() {
+        Stage popup = new Stage();
+        popup.setTitle("Load Config from File");
+
+        Text text = new Text("Enter Name of Save File:");
+
+        TextField textField = new TextField();
+        textField.setPromptText("Default: save");
+        textField.setId("loadTextfield");
+
+        Button button = new Button("Load");
+        button.setId("loadButton");
+
+        VBox vbox = new VBox();
+        vbox.setAlignment(Pos.BASELINE_CENTER);
+        vbox.getChildren().addAll(text, textField, button);
+
+        Scene scene = new Scene(vbox, 200, 150);
+        popup.setScene(scene);
+        
+        
         return popup;
     }
 }
