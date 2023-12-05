@@ -25,12 +25,12 @@ public class FileManager {
     }
 
     // Save to default file location
-    public void saveToFile(double initialInvestment, double bondDuration, double interestRate, double investmentDuration) {
+    public void saveToFile(String initialInvestment, String bondDuration, String interestRate, String investmentDuration) {
         saveToFile(initialInvestment, bondDuration, interestRate, investmentDuration, DEFAULT_FILE_NAME);
     }
 
     // Save to location with specified name
-    public void saveToFile(double initialInvestment, double bondDuration, double interestRate, double investmentDuration, String fileName) {
+    public void saveToFile(String initialInvestment, String bondDuration, String interestRate, String investmentDuration, String fileName) {
         try {
             String pathString = getSavePath() + "\\" + fileName + ".txt";
 
@@ -62,7 +62,7 @@ public class FileManager {
     }
 
     // Pop Up Menu for Saving to Specific Location
-    public Stage savePopup(double initialInvestment, double bondDuration, double interestRate, double investmentDuration) {
+    public Stage savePopup(String initialInvestment, String bondDuration, String interestRate, String investmentDuration) {
         Stage popup = new Stage();
         popup.setTitle("Save Config to File");
 
@@ -93,18 +93,18 @@ public class FileManager {
         return popup;
     }
 
-    public Double[] loadFromFile() {
+    public String[] loadFromFile() {
         return loadFromFile(DEFAULT_FILE_NAME);
     }
 
-    public Double[] loadFromFile(String fileName) {
+    public String[] loadFromFile(String fileName) {
         String savePath = getSavePath() + "\\" + fileName + ".txt";
-        Double[] doubleArray = new Double[4];
+        String[] doubleArray = new String[4];
 
         try {
             Scanner reader = new Scanner(new File(savePath));
             for (int i = 0; i < doubleArray.length; i++) {
-                doubleArray[i] = reader.nextDouble();
+                doubleArray[i] = reader.nextLine();
             }
 
             System.out.println("Successfully loaded from " + savePath);
@@ -117,27 +117,5 @@ public class FileManager {
     }
 
     // Pop Up Menu for Loading a Specific File
-    public Stage loadPopup() {
-        Stage popup = new Stage();
-        popup.setTitle("Load Config from File");
-
-        Text text = new Text("Enter Name of Save File:");
-
-        TextField textField = new TextField();
-        textField.setPromptText("Default: save");
-        textField.setId("loadTextfield");
-
-        Button button = new Button("Load");
-        button.setId("loadButton");
-
-        VBox vbox = new VBox();
-        vbox.setAlignment(Pos.BASELINE_CENTER);
-        vbox.getChildren().addAll(text, textField, button);
-
-        Scene scene = new Scene(vbox, 200, 150);
-        popup.setScene(scene);
-        
-        
-        return popup;
-    }
+    
 }

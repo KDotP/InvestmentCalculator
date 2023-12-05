@@ -11,6 +11,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -29,7 +30,13 @@ public class Main extends Application {
     private static double interestRate = 0.05; // 5%
     private static double investmentDuration = 3; // 3 Years
 
+    // String version for *stuff*
+    private static String initialInvestmentString = "1000";
+    private static String bondDurationString = "6M";
+    private static String interestRateString = "5";
+    private static String investmentDurationString = "3Y";
 
+    LineChart<Number, Number> chart;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -108,7 +115,7 @@ public class Main extends Application {
 
         NumberAxis xAxis = new NumberAxis(); // Time axis
         NumberAxis yAxis = new NumberAxis(); // Money axis
-        LineChart<Number, Number> chart = new LineChart<>(xAxis, yAxis);
+        chart = new LineChart<>(xAxis, yAxis);
         parent.setCenter(chart);
 
         // Activate the scene
@@ -124,21 +131,21 @@ public class Main extends Application {
         // Initial Investment
         initialInvestmentField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.equals("")) {
-                initialInvestment = 1000;
+                initialInvestmentString = "1000";
             } else {
-                initialInvestment = manager.sanitizeDouble(newValue);
+                initialInvestmentString = newValue;
             }
             if (VERBOSE) {
-                System.out.println("Initial Investment Changed: " + initialInvestment);
+                System.out.println("Initial Investment Changed: " + initialInvestmentString);
             }
         });
 
         // Bond Duration
         bondDurationField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.equals("")) {
-                bondDuration = 0.5;
+                bondDurationString = "6M";
             } else {
-                bondDuration = manager.convertTime(newValue);
+                bondDurationString = newValue;
             }
             if (VERBOSE) {
                 System.out.println("Bond Duration Changed: " + bondDuration);
@@ -148,17 +155,18 @@ public class Main extends Application {
         // Expected APY
         expectedApyField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.equals("")) {
-                interestRate = 0.05;
+                interestRateString = "5";
             } else {
-                interestRate = (manager.sanitizeDouble(newValue) / 100);
+                interestRateString = newValue;
             }
             if (VERBOSE) {
                 System.out.println("Interest Rate Changed: " + interestRate);
             }
         });
 
+        // Use API checkbox
         useApiBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            expectedApyField.setEditable(!newValue);
+            expectedApyField.setDisable(newValue);
             interestRate = getApy();
             if (VERBOSE) {
                 System.out.println("Use API: " + newValue);
@@ -168,9 +176,9 @@ public class Main extends Application {
         // Investment Duration
         totalDurationField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.equals("")) {
-                investmentDuration = 3;
+                investmentDurationString = "3Y";
             } else {
-                investmentDuration = manager.convertTime(newValue);
+                investmentDurationString = newValue;
             }
             
             if (VERBOSE) {
@@ -183,9 +191,12 @@ public class Main extends Application {
             // Change menu
         });
 
-        // Calculate Results
+        /*
+        * Calculate Results
+        * In retrospect, this should be a function, but now I'm in too deep
+        */
         calculateButton.setOnAction(event -> {
-            
+            updateVarsFromStrings();
 
             // This is what happens when you choose a bad way a calculating stuff early on and now you have to live with your mistakes
             String totalDurationString;
@@ -217,16 +228,27 @@ public class Main extends Application {
 
             newSeries.getData().add(new XYChart.Data<>(0, initialInvestment)); // Starting data point
 
-            // Populate chart
+            // Populate chart with data
+            System.out.println(runs);
             for (int i = 1; i <= runs; i++) {
                 results = manager.calculate(initialInvestment, interestRate, (investmentDuration / runs) * i, bondDuration); // Last run should yield correct final results
-                newSeries.getData().add(new XYChart.Data<>(i, results));
+                newSeries.getData().add(new XYChart.Data<>(i * bondDuration, results)); // Scale the model to a year duration
             }
             
             chart.getData().add(newSeries);
 
-            // Final results
-            results = manager.calculate(initialInvestment, interestRate, investmentDuration, bondDuration);
+            // https://docs.oracle.com/javase/8/javafx/api/javafx/scene/control/Tooltip.html
+            // https://stackoverflow.com/questions/14117867/tooltips-for-datapoints-in-a-scatter-chart-in-javafx-2-2
+            for (XYChart.Series<Number, Number> s : chart.getData()) {
+                for (XYChart.Data<Number, Number> d : s.getData()) {
+                    Tooltip tooltip = new Tooltip("Value: " + d.getXValue().doubleValue());
+                    Tooltip.install(d.getNode(), tooltip);
+                }
+            }
+                
+
+            // Final results THE LAST CALCULATION SHOULD BE THE ONLY ONE THAT MATTERS
+            // results = manager.calculate(initialInvestment, interestRate, investmentDuration, bondDuration);
             resultText.setText("$" + results);
             if (VERBOSE) {
                 System.out.println("Results: " + results);
@@ -235,13 +257,13 @@ public class Main extends Application {
 
         // Save config button
         saveConfigButton.setOnAction(event -> {
-            Stage test = fileManager.savePopup(initialInvestment, bondDuration, interestRate, investmentDuration);
+            Stage test = fileManager.savePopup(initialInvestmentString, bondDurationString, interestRateString, investmentDurationString);
             test.show();
         });
 
         // Load config button
         loadConfigButton.setOnAction(event -> {
-            Stage test = fileManager.loadPopup();
+            Stage test = loadPopup(initialInvestmentField, bondDurationField, expectedApyField, totalDurationField);
             test.show();
         });   
     }
@@ -259,6 +281,71 @@ public class Main extends Application {
         returnField.setPromptText(promt);
 
         return returnField;
+    }
+
+    private Stage loadPopup(TextField initialInvestmentField, TextField bondDurationField, TextField expectedApyField, TextField investmentDurationField) {
+        Stage popup = new Stage();
+        popup.setTitle("Load Config from File");
+
+        Text text = new Text("Enter Name of Save File:");
+
+        TextField textField = new TextField();
+        textField.setPromptText("Default: save");
+        textField.setId("loadTextfield");
+
+        Button button = new Button("Load");
+        button.setId("loadButton");
+
+        VBox vbox = new VBox();
+        vbox.setAlignment(Pos.BASELINE_CENTER);
+        vbox.getChildren().addAll(text, textField, button);
+
+        Scene scene = new Scene(vbox, 200, 150);
+        popup.setScene(scene);
+
+        // Confirm load button
+        button.setOnAction(event -> {
+            String fieldString = textField.getText();
+            if (fieldString.equals("")) {
+                // If no file name is loaded, load default file
+                String[] loadOutput = fileManager.loadFromFile();
+                setFromLoad(loadOutput);
+            } else {
+                // If file is specified, load the new files into the string values
+                String[] loadOutput = fileManager.loadFromFile(fieldString);
+                setFromLoad(loadOutput);
+            }
+            updateFields(initialInvestmentField, bondDurationField, expectedApyField, investmentDurationField);
+
+            popup.close();
+        });
+        
+        return popup;
+    }
+
+    // Set the string values to the new ones retrieved from loading file
+    private void setFromLoad(String[] loadOutput) {
+        initialInvestmentString = loadOutput[0];
+        bondDurationString = loadOutput[1];
+        interestRateString = loadOutput[2];
+        investmentDurationString = loadOutput[3];
+    }
+
+    // Set the textfield text to the new String values
+    private void updateFields(TextField initialInvestmentField, TextField bondDurationField, TextField expectedApyField, TextField investmentDurationField) {
+        // I use "" + double to convert to a string despite the fact that the compiler really should be able to do that for me
+        initialInvestmentField.setText(initialInvestmentString);
+        bondDurationField.setText(bondDurationString);
+        expectedApyField.setText(interestRateString);
+        investmentDurationField.setText(investmentDurationString);
+    }
+
+    // Extract the values to the global doubles
+    private void updateVarsFromStrings() {
+        initialInvestment = manager.sanitizeDouble(initialInvestmentString);
+        bondDuration = manager.convertTime(bondDurationString);
+        interestRate = ((manager.sanitizeDouble(interestRateString)) / 100);
+        investmentDuration = manager.convertTime(investmentDurationString);
     }
 
     public static void main(String[] args) {
