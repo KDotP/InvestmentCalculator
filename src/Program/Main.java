@@ -11,9 +11,9 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -36,7 +36,9 @@ public class Main extends Application {
     private static String interestRateString = "5";
     private static String investmentDurationString = "3Y";
 
-    LineChart<Number, Number> chart;
+    private static LineChart<Number, Number> chart;
+    private static NumberAxis xAxis; // Time axis
+    private static NumberAxis yAxis; // Money axis
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -113,9 +115,10 @@ public class Main extends Application {
         // https://docs.oracle.com/javafx/2/charts/line-chart.htm
         // Why must we make things so unnecessarily difficult?
 
-        NumberAxis xAxis = new NumberAxis(); // Time axis
-        NumberAxis yAxis = new NumberAxis(); // Money axis
+        xAxis = new NumberAxis(); // Time axis
+        yAxis = new NumberAxis(); // Money axis
         chart = new LineChart<>(xAxis, yAxis);
+
         parent.setCenter(chart);
 
         // Activate the scene
@@ -229,7 +232,6 @@ public class Main extends Application {
             newSeries.getData().add(new XYChart.Data<>(0, initialInvestment)); // Starting data point
 
             // Populate chart with data
-            System.out.println(runs);
             for (int i = 1; i <= runs; i++) {
                 results = manager.calculate(initialInvestment, interestRate, (investmentDuration / runs) * i, bondDuration); // Last run should yield correct final results
                 newSeries.getData().add(new XYChart.Data<>(i * bondDuration, results)); // Scale the model to a year duration
@@ -239,11 +241,34 @@ public class Main extends Application {
 
             // https://docs.oracle.com/javase/8/javafx/api/javafx/scene/control/Tooltip.html
             // https://stackoverflow.com/questions/14117867/tooltips-for-datapoints-in-a-scatter-chart-in-javafx-2-2
-            for (XYChart.Series<Number, Number> s : chart.getData()) {
-                for (XYChart.Data<Number, Number> d : s.getData()) {
-                    Tooltip tooltip = new Tooltip("Value: " + d.getXValue().doubleValue());
-                    Tooltip.install(d.getNode(), tooltip);
-                }
+            // https://gist.github.com/jewelsea/4681797
+            // This took a bunch of references to figure out and get working
+            for (XYChart.Data<Number, Number> d : newSeries.getData()) {
+                StackPane dataPoint = (StackPane) d.getNode();
+                Text label = new Text("$" + d.getYValue().toString()); // Create the label text that reflects the node's value
+
+                // On hover over
+                dataPoint.setOnMouseEntered(event2 -> {
+                    label.setVisible(true);
+                    
+                    // I wish I could explain why this is done like this
+                    // It would make more since to add the child directly to the datapoint instead onMouseEntered, but for some reason it breaks everything
+                    if (dataPoint.getChildren().size() == 0) {
+                        dataPoint.getChildren().add(label);
+                    }
+                    
+                    label.setTranslateY(20);
+                    label.setText(d.getYValue().toString());
+
+                    if (VERBOSE) {
+                        System.out.println("Hovered over node $" + d.getYValue());
+                    }
+                });
+
+                // Hide the label when the mouse leaves (bye bye mouse)
+                dataPoint.setOnMouseExited(event2 -> {
+                    label.setVisible(false);
+                });
             }
                 
 
