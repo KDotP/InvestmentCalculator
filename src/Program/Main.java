@@ -23,6 +23,7 @@ public class Main extends Application {
     private static FileManager fileManager;
 
     private static final boolean VERBOSE = false; // For testing, should be false by default
+    private static String currencySymbol = "$";
 
     // Default values
     private static double initialInvestment = 1000; // $1000
@@ -57,24 +58,26 @@ public class Main extends Application {
         modeDropdown.setPromptText("Bond");
         modeDropdown.getItems().addAll("Bond", "Stock", "Dividend Stock");
         modeDropdown.setPrefWidth(200);
-        modeDropdown.setPrefHeight(50);
+        modeDropdown.setPrefHeight(40);
         Button saveConfigButton = new Button("Save Config");
         saveConfigButton.setPrefWidth(140);
-        saveConfigButton.setPrefHeight(50);
+        saveConfigButton.setPrefHeight(40);
         Button loadConfigButton = new Button("Load Config");
         loadConfigButton.setPrefWidth(140);
-        loadConfigButton.setPrefHeight(50);
+        loadConfigButton.setPrefHeight(40);
 
         topLeft.getChildren().addAll(modeDropdown, saveConfigButton, loadConfigButton);
 
         topPane.setLeft(topLeft);
 
-        // Top Right Button
-        Button saveGraphButton = new Button("Save Graph");
-        saveGraphButton.setPrefWidth(140);
-        saveGraphButton.setPrefHeight(50);
-        topPane.setRight(saveGraphButton);
-        
+        // Top Right Currency Select Button
+        ComboBox<String> currencySelection = new ComboBox<>();
+        currencySelection.setPromptText("$");
+        currencySelection.setPrefWidth(5);
+        currencySelection.setPrefHeight(40);
+        currencySelection.getItems().addAll("$", "€", "¥", "£");
+        topPane.setRight(currencySelection);
+
         parent.setTop(topPane);
 
         // Side Menu
@@ -116,8 +119,11 @@ public class Main extends Application {
         // Why must we make things so unnecessarily difficult?
 
         xAxis = new NumberAxis(); // Time axis
+        xAxis.setLabel("Years");
         yAxis = new NumberAxis(); // Money axis
+        yAxis.setLabel("Returns");
         chart = new LineChart<>(xAxis, yAxis);
+        chart.setLegendVisible(false); // Hide the little thing at the bottom
 
         parent.setCenter(chart);
 
@@ -261,7 +267,7 @@ public class Main extends Application {
                     label.setText(d.getYValue().toString());
 
                     if (VERBOSE) {
-                        System.out.println("Hovered over node $" + d.getYValue());
+                        System.out.println("Hovered over node " + currencySymbol + d.getYValue());
                     }
                 });
 
@@ -274,7 +280,7 @@ public class Main extends Application {
 
             // Final results THE LAST CALCULATION SHOULD BE THE ONLY ONE THAT MATTERS
             // results = manager.calculate(initialInvestment, interestRate, investmentDuration, bondDuration);
-            resultText.setText("$" + results);
+            resultText.setText(currencySymbol + results);
             if (VERBOSE) {
                 System.out.println("Results: " + results);
             }
@@ -290,7 +296,13 @@ public class Main extends Application {
         loadConfigButton.setOnAction(event -> {
             Stage test = loadPopup(initialInvestmentField, bondDurationField, expectedApyField, totalDurationField);
             test.show();
-        });   
+        });
+
+        // Change currency
+        currencySelection.setOnAction(event -> {
+            currencySymbol = currencySelection.getValue();
+            updateCurrency(initialInvestmentField);
+        });
     }
 
     private double getApy() {
@@ -371,6 +383,10 @@ public class Main extends Application {
         bondDuration = manager.convertTime(bondDurationString);
         interestRate = ((manager.sanitizeDouble(interestRateString)) / 100);
         investmentDuration = manager.convertTime(investmentDurationString);
+    }
+
+    private void updateCurrency(TextField field) {
+        field.setPromptText("Default: " + currencySymbol + "1000");
     }
 
     public static void main(String[] args) {
