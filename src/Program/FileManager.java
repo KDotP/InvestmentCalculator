@@ -1,3 +1,14 @@
+/**
+ * Computer Science Final Project
+ * Investment Calculator
+ * <p>
+ * CSC 1061 - Computer Science II - Java
+ *
+ * @author  Kieran Persoff
+ * @version %I%, %G%
+ * @since   1.0
+ */
+
 package Program;
 
 import java.io.BufferedWriter;
@@ -115,7 +126,4 @@ public class FileManager {
             return null;
         }        
     }
-
-    // Pop Up Menu for Loading a Specific File
-    
 }

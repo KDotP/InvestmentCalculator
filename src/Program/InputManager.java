@@ -1,3 +1,14 @@
+/**
+ * Computer Science Final Project
+ * Investment Calculator
+ * <p>
+ * CSC 1061 - Computer Science II - Java
+ *
+ * @author  Kieran Persoff
+ * @version %I%, %G%
+ * @since   1.0
+ */
+
 package Program;
 
 public class InputManager {
