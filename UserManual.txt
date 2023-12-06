@@ -1,3 +1,11 @@
+>>> If Launch Files
+If you've launched run.bat and not gotten any results, it's possible you either have a bad version of java or don't have java installed at all
+To check, go to a command line (cmd on windows) and enter 'java -version' without the quotation marks
+If you get an error message or any version that doesn't start with 17.0, go to https://www.oracle.com/java/technologies/downloads/#jdk17-windows
+From there, navigate to JDK 17, then select your operating system
+Either install the installer (suggested) or follow the directions to install java
+If this still doesn't work, try restarting your computer
+
 >>> Investment Calculator
 This manual details how to use the Investment Calculator app
 If any text field is left empty, it will use its default value
