@@ -1,16 +1,15 @@
-rem Compile and Run Batch
 @echo off
+echo Running Investment Calculator
+echo Ver 1.0.1
+echo By Kieran Persoff
+echo --- Program Outputs ---
 
-echo reached 1
+rem This took hours to make, but not because it was difficult
+rem While I have previous experience making batch files for java projects,
+rem I didn't realize I had to put the entire javaFX folder in the lib folder
+rem But hey, it works and requires no input from the user!
 
-javac --module-path lib --add-modules javafx.controls,javafx.fxml -d bin src\*.java
+javac --module-path "lib\javafx-sdk-17.0.8\lib" --add-modules javafx.controls,javafx.fxml -d bin -cp "%lib\javafx-sdk-17.0.8\lib\*" src\*.java
 
-echo reached 2
+java --module-path "lib\javafx-sdk-17.0.8\lib" --add-modules javafx.controls,javafx.fxml -Dprism.order=sw -cp bin;"lib\javafx-sdk-17.0.8\lib\*" Main
 
-jar cfm bin\Application.jar bin\manifest.txt
-
-echo reached 3
-
-java --module-path lib --add-modules javafx.controls,javafx.fxml -jar bin\Application.jar
-
-echo reached 4

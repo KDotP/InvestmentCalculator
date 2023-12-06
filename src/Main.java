@@ -3,11 +3,21 @@
  * Investment Calculator
  * <p>
  * CSC 1061 - Computer Science II - Java
+ * 
+ * "If I had more time, I would have written a shorter a letter"
+ * - Mark Twain (maybe)
  *
  * @author  Kieran Persoff
  * @version %I%, %G%
  * @since   1.0
  */
+
+// In case you're wondering, the readme is based off the first github project I found with a good readme: https://github.com/microsoft/TaskWeaver/tree/main
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 import javafx.application.Application;
 import javafx.geometry.Pos;
@@ -32,6 +42,7 @@ public class Main extends Application {
     private static FileManager fileManager;
 
     private static final boolean VERBOSE = false; // For testing, should be false by default
+    private static String investmentMode = "C"; // A: Appeciating, C: Compounding
     private static String currencySymbol = "$";
 
     // Default values
@@ -64,8 +75,8 @@ public class Main extends Application {
         HBox topLeft = new HBox();
 
         ComboBox<String> modeDropdown = new ComboBox<>();
-        modeDropdown.setPromptText("Bond");
-        modeDropdown.getItems().addAll("Bond", "Stock", "Dividend Stock");
+        modeDropdown.setPromptText("Compounding Security");
+        modeDropdown.getItems().addAll("Compounding Security", "Appreciating Security");
         modeDropdown.setPrefWidth(200);
         modeDropdown.setPrefHeight(40);
         Button saveConfigButton = new Button("Save Config");
@@ -98,7 +109,7 @@ public class Main extends Application {
         Label initialLabel = new Label("Initial Investment");
         TextField initialInvestmentField = createField("Default: $1000", 150);
 
-        Label durationLabel = new Label("Bond Duration");
+        Label durationLabel = new Label("Reinvestment Period");
         TextField bondDurationField = createField("Default: 6M", 80);
 
         Label apyLabel = new Label("Expected APY");
@@ -185,7 +196,16 @@ public class Main extends Application {
         // Use API checkbox
         useApiBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             expectedApyField.setDisable(newValue);
-            interestRate = getApy();
+            
+            if (newValue) { // If the checkbox IS ticked
+                String apy = getApy();
+                expectedApyField.setText(apy + "%");
+                interestRateString = apy;
+                if (VERBOSE) {
+                    System.out.println("Got APY: " + apy);
+                }
+            }
+
             if (VERBOSE) {
                 System.out.println("Use API: " + newValue);
             }
@@ -204,43 +224,52 @@ public class Main extends Application {
             }
         });
 
-        // Dropdown Box
+        // Mode Dropdown Box
+        // Changes between compounding equation P(1+(r/n))^nt to Continuous Interest Pe^rt
         modeDropdown.setOnAction(event -> {
-            // Change menu
+            String selectedMode = modeDropdown.getValue();
+            if (selectedMode.equals("Compounding Security")) {
+                investmentMode = "C";
+                bondDurationField.setDisable(false);
+            } else if (selectedMode.equals("Appreciating Security")) {
+                investmentMode = "A";
+                bondDurationField.setDisable(true); // There is no need for duration in continous interest 
+            } else {
+                // This should never be a case because how do you select nothing?
+                System.out.println("Dropdown Error");
+                investmentMode = "C";
+            }
+
+            if (VERBOSE) {
+                System.out.println("Changed mode to " + selectedMode);
+            }
         });
 
         /*
         * Calculate Results
-        * In retrospect, this should be a function, but now I'm in too deep
+        * In retrospect, this should be a function in another file, but now I'm in too deep
         */
         calculateButton.setOnAction(event -> {
             updateVarsFromStrings();
 
-            // This is what happens when you choose a bad way a calculating stuff early on and now you have to live with your mistakes
-            String totalDurationString;
-            if (totalDurationField.getText().equals("")) {
-                totalDurationString = "3Y";
-            } else {
-                totalDurationString = totalDurationField.getText();
-            }
-            returnText.setText("Expected Return After " + manager.interpString(totalDurationString) + ":");
+            // Set the first text to detail results
+            returnText.setText("Expected Return After " + manager.interpString(investmentDurationString) + ":");
 
             // This is not a good way to do this but my brain has shut off
             // Calculate number of times to run chart loop
             int runs = 0;
-            String bondDurationString;
-            if (bondDurationField.getText().equals("")) {
-                bondDurationString = "6M";
-            } else {
-                bondDurationString = bondDurationField.getText();
+            if (investmentMode.equals("C")) {
+                runs = manager.totalRuns(manager.convertTime(investmentDurationString), manager.convertTime(bondDurationString));
+            } else if (investmentMode.equals("A")) {
+                runs = (int) Math.floor(investmentDuration * 365d); // Continous interest will create a node for every day in the year
             }
-            runs = manager.totalRuns(manager.convertTime(totalDurationString), manager.convertTime(bondDurationString));
             if (VERBOSE) {
                 System.out.println("Running " + runs + " times");
             }
 
             // Reset chart
             chart.getData().clear();
+
             double results = initialInvestment; // If it runs 0 times, you still have your initial investment
             XYChart.Series<Number, Number> newSeries = new XYChart.Series<>();
 
@@ -248,8 +277,13 @@ public class Main extends Application {
 
             // Populate chart with data
             for (int i = 1; i <= runs; i++) {
-                results = manager.calculate(initialInvestment, interestRate, (investmentDuration / runs) * i, bondDuration); // Last run should yield correct final results
-                newSeries.getData().add(new XYChart.Data<>(i * bondDuration, results)); // Scale the model to a year duration
+                if (investmentMode.equals("C")) {
+                    results = manager.calculate(initialInvestment, interestRate, (investmentDuration / runs) * i, bondDuration); // Last run should yield correct final results
+                    newSeries.getData().add(new XYChart.Data<>(i * bondDuration, results)); // Scale the model to a year duration
+                } else if (investmentMode.equals("A")) {
+                    results = manager.contCalculate(initialInvestment, interestRate, (investmentDuration / runs) * i); // Last run should yield correct final results
+                    newSeries.getData().add(new XYChart.Data<>(i * manager.convertTime("7d"), results)); // Run every week for appeciating because ??
+                }
             }
             
             chart.getData().add(newSeries);
@@ -291,19 +325,19 @@ public class Main extends Application {
             // results = manager.calculate(initialInvestment, interestRate, investmentDuration, bondDuration);
             resultText.setText(currencySymbol + results);
             if (VERBOSE) {
-                System.out.println("Results: " + results);
+                System.out.println("Results: " + currencySymbol + results);
             }
         });
 
         // Save config button
         saveConfigButton.setOnAction(event -> {
-            Stage test = fileManager.savePopup(initialInvestmentString, bondDurationString, interestRateString, investmentDurationString);
+            Stage test = fileManager.savePopup(initialInvestmentString, bondDurationString, interestRateString, investmentDurationString, investmentMode);
             test.show();
         });
 
         // Load config button
         loadConfigButton.setOnAction(event -> {
-            Stage test = loadPopup(initialInvestmentField, bondDurationField, expectedApyField, totalDurationField);
+            Stage test = loadPopup(initialInvestmentField, bondDurationField, expectedApyField, totalDurationField, modeDropdown);
             test.show();
         });
 
@@ -314,9 +348,38 @@ public class Main extends Application {
         });
     }
 
-    private double getApy() {
-        // TO DO
-        return 0;
+    /* References (for me)
+    * https://scand.com/company/blog/how-to-use-api-with-java/
+    * https://rapidapi.com/blog/how-to-use-an-api-with-java/
+    * This took a LONG time
+    * There's also a delay of around 1 month for the data
+    */
+    private static String getApy() {
+        try {
+            URL url = new URL("https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/avg_interest_rates?sort=-record_date"); // Get most recent API results
+            HttpURLConnection apiSite = (HttpURLConnection) url.openConnection();
+            apiSite.setRequestMethod("GET");
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(apiSite.getInputStream()));
+            String result = reader.readLine(); // Get the ENTIRE api response
+            int apyIndex = result.indexOf("\"avg_interest_rate_amt\":\""); // Get the location of the first interest rate (it's a good thing treasury bills are entered first)
+            if (apyIndex == -1) {
+                System.out.println("Failed to get APY rate from API");
+                return "5"; // Failed to find the string in the thing
+            }
+            apyIndex += "\"avg_interest_rate_amt\":\"".length(); // Basically move forward to where the results are shown
+            int end = result.indexOf("\"", apyIndex); // Look for the first quote after the double starts
+
+            result = result.substring(apyIndex, end);
+
+            return result;
+        } catch (Exception e) {
+            System.out.println("API connection failed!");
+            e.printStackTrace();
+            return "5";
+        }
+        
+        //return "-1%";
     }
 
     // Create a text field with specific parameters because it's done multiple times
@@ -329,7 +392,7 @@ public class Main extends Application {
         return returnField;
     }
 
-    private Stage loadPopup(TextField initialInvestmentField, TextField bondDurationField, TextField expectedApyField, TextField investmentDurationField) {
+    private Stage loadPopup(TextField initialInvestmentField, TextField bondDurationField, TextField expectedApyField, TextField investmentDurationField, ComboBox<String> modeSelect) {
         Stage popup = new Stage();
         popup.setTitle("Load Config from File");
 
@@ -361,7 +424,7 @@ public class Main extends Application {
                 String[] loadOutput = fileManager.loadFromFile(fieldString);
                 setFromLoad(loadOutput);
             }
-            updateFields(initialInvestmentField, bondDurationField, expectedApyField, investmentDurationField);
+            updateFields(initialInvestmentField, bondDurationField, expectedApyField, investmentDurationField, modeSelect);
 
             popup.close();
         });
@@ -375,15 +438,22 @@ public class Main extends Application {
         bondDurationString = loadOutput[1];
         interestRateString = loadOutput[2];
         investmentDurationString = loadOutput[3];
+        investmentMode = loadOutput[4];
     }
 
     // Set the textfield text to the new String values
-    private void updateFields(TextField initialInvestmentField, TextField bondDurationField, TextField expectedApyField, TextField investmentDurationField) {
+    private void updateFields(TextField initialInvestmentField, TextField bondDurationField, TextField expectedApyField, TextField investmentDurationField, ComboBox<String> modeSelect) {
         // I use "" + double to convert to a string despite the fact that the compiler really should be able to do that for me
         initialInvestmentField.setText(initialInvestmentString);
         bondDurationField.setText(bondDurationString);
         expectedApyField.setText(interestRateString);
         investmentDurationField.setText(investmentDurationString);
+        if (investmentMode.equals("A")) {
+            modeSelect.setValue("Appreciating Security");
+        } else {
+            modeSelect.setValue("Compounding Security");
+        }
+        
     }
 
     // Extract the values to the global doubles

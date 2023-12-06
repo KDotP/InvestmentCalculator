@@ -34,17 +34,17 @@ public class FileManager {
     }
 
     // Save to default file location
-    public void saveToFile(String initialInvestment, String bondDuration, String interestRate, String investmentDuration) {
-        saveToFile(initialInvestment, bondDuration, interestRate, investmentDuration, DEFAULT_FILE_NAME);
+    public void saveToFile(String initialInvestment, String bondDuration, String interestRate, String investmentDuration, String investmentMode) {
+        saveToFile(initialInvestment, bondDuration, interestRate, investmentDuration, investmentMode, DEFAULT_FILE_NAME);
     }
 
     // Save to location with specified name
-    public void saveToFile(String initialInvestment, String bondDuration, String interestRate, String investmentDuration, String fileName) {
+    public void saveToFile(String initialInvestment, String bondDuration, String interestRate, String investmentDuration, String investmentMode, String fileName) {
         try {
             String pathString = getSavePath() + "\\" + fileName + ".txt";
 
             BufferedWriter writer = new BufferedWriter(new FileWriter(pathString));
-            writer.write(initialInvestment + "\n" + bondDuration + "\n" + interestRate + "\n" + investmentDuration);
+            writer.write(initialInvestment + "\n" + bondDuration + "\n" + interestRate + "\n" + investmentDuration + "\n" + investmentMode);
             System.out.println("Successfully saved to " + pathString);
             writer.close();
         } catch (IOException e) {
@@ -59,7 +59,7 @@ public class FileManager {
             // https://stackoverflow.com/questions/320542/how-to-get-the-path-of-a-running-jar-file
             // Get path of master folder
             Path path = Paths.get(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-            String pathString = path.getParent().toString() + "\\Saves";
+            String pathString = path.getParent().toString() + "\\saves";
             // System.out.println(pathString);
 
             return pathString;
@@ -71,7 +71,7 @@ public class FileManager {
     }
 
     // Pop Up Menu for Saving to Specific Location
-    public Stage savePopup(String initialInvestment, String bondDuration, String interestRate, String investmentDuration) {
+    public Stage savePopup(String initialInvestment, String bondDuration, String interestRate, String investmentDuration, String investmentMode) {
         Stage popup = new Stage();
         popup.setTitle("Save Config to File");
 
@@ -92,9 +92,9 @@ public class FileManager {
         button.setOnAction(event -> {
             String innerText = textField.getText();
             if (innerText.equals("")) {
-                saveToFile(initialInvestment, bondDuration, interestRate, investmentDuration);
+                saveToFile(initialInvestment, bondDuration, interestRate, investmentDuration, investmentMode);
             } else {
-                saveToFile(initialInvestment, bondDuration, interestRate, investmentDuration, innerText);
+                saveToFile(initialInvestment, bondDuration, interestRate, investmentDuration, investmentMode, innerText);
             }
             popup.close();
         });     
@@ -108,7 +108,7 @@ public class FileManager {
 
     public String[] loadFromFile(String fileName) {
         String savePath = getSavePath() + "\\" + fileName + ".txt";
-        String[] doubleArray = new String[4];
+        String[] doubleArray = new String[5];
 
         try {
             Scanner reader = new Scanner(new File(savePath));

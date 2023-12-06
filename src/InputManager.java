@@ -119,10 +119,19 @@ public class InputManager {
 
     double calculate(double initialInvestment, double interestRate, double investmentDuration, double bondDuration) {
         double finalAmount = initialInvestment * Math.pow(1 + (interestRate / (1 / bondDuration)), (1 / bondDuration) * investmentDuration); // 1 / bondDuration is for the number of times per year
+        return roundNumber(finalAmount);
+    }
+
+    double contCalculate(double initialInvestment, double interestRate, double investmentDuration) {
+        double finalAmount = initialInvestment * Math.pow(Math.E, interestRate * investmentDuration);
+        return roundNumber(finalAmount);
+    }
+
+    private double roundNumber(double input) {
         // Round to 2 decimals
-        finalAmount *= 100;
-        finalAmount = Math.floor(finalAmount);
-        finalAmount /= 100;
-        return finalAmount;
+        input *= 100;
+        input = Math.floor(input);
+        input /= 100;
+        return input;
     }
 }

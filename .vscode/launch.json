@@ -8,9 +8,8 @@
             "type": "java",
             "name": "Main",
             "request": "launch",
-            "mainClass": "Program.Main",
-            "projectName": "InvestmentCalculator_1300f4b2",
-            "vmArgs": "--module-path C:/Users/kpers/Downloads/openjfx-17.0.8_windows-x64_bin-sdk/javafx-sdk-17.0.8/lib --add-modules javafx.controls,javafx.fxml"
+            "mainClass": "Main",
+            "projectName": "InvestmentCalcBackup - Copy_b61a93c1"
         },
         {
             "type": "java",
@@ -20,10 +19,11 @@
         },
         {
             "type": "java",
-            "name": "App",
+            "name": "Main",
             "request": "launch",
-            "mainClass": "App",
-            "projectName": "InvestmentCalculator_1300f4b2"
+            "mainClass": "Main",
+            "projectName": "InvestmentCalcBackup_bb5f9227",
+            "vmArgs": "--module-path C:/Users/kpers/Downloads/openjfx-17.0.8_windows-x64_bin-sdk/javafx-sdk-17.0.8/lib --add-modules javafx.controls,javafx.fxml"
         }
     ]
 }
