@@ -15,7 +15,7 @@ Instead of some complicated command line nonsense, all you need to do is find th
 
 # Using the Application
 
-To change between an compounding asset (such as a bond) or appeciating asset (such as a stock), click on the dropdown menu at the top left (it should say "Compounding Security" by default) and select your prefered mode
-To get current expected APY rates, simply check the 'Use Current Rates' checkbox
-To update graph and get final expected value, press the 'Calculate' button at the bottom of the left-hand menu
+To change between an compounding asset (such as a bond) or appeciating asset (such as a stock), click on the dropdown menu at the top left (it should say "Compounding Security" by default) and select your prefered mode__
+To get current expected APY rates, simply check the 'Use Current Rates' checkbox__
+To update graph and get final expected value, press the 'Calculate' button at the bottom of the left-hand menu__
 Refer to the UserManual.txt file in the root folder for specific explainations for each field
