@@ -12,8 +12,6 @@
  * @since   1.0
  */
 
-// In case you're wondering, the readme is based off the first github project I found with a good readme: https://github.com/microsoft/TaskWeaver/tree/main
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -155,9 +153,11 @@ public class Main extends Application {
         primaryStage.setTitle("Problem2");
         primaryStage.show();
 
-        // Actions
+        /**
+         * Button / GUI Actions
+         */ 
 
-        // Initial Investment
+        // Initial Investment Field Changed
         initialInvestmentField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.equals("")) {
                 initialInvestmentString = "1000";
@@ -169,7 +169,7 @@ public class Main extends Application {
             }
         });
 
-        // Bond Duration
+        // Bond Duration Field Changed
         bondDurationField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.equals("")) {
                 bondDurationString = "6M";
@@ -181,7 +181,7 @@ public class Main extends Application {
             }
         });
 
-        // Expected APY
+        // Expected APY Field Changed
         expectedApyField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.equals("")) {
                 interestRateString = "5";
@@ -193,11 +193,12 @@ public class Main extends Application {
             }
         });
 
-        // Use API checkbox
+        // Use API Checkbox Toggled
         useApiBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             expectedApyField.setDisable(newValue);
             
-            if (newValue) { // If the checkbox IS ticked
+            // If the checkbox IS ticked
+            if (newValue) {
                 String apy = getApy();
                 expectedApyField.setText(apy + "%");
                 interestRateString = apy;
@@ -211,7 +212,7 @@ public class Main extends Application {
             }
         });
 
-        // Investment Duration
+        // Investment Duration Field Changed
         totalDurationField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.equals("")) {
                 investmentDurationString = "3Y";
@@ -224,7 +225,7 @@ public class Main extends Application {
             }
         });
 
-        // Mode Dropdown Box
+        // Mode Dropdown Box Changed
         // Changes between compounding equation P(1+(r/n))^nt to Continuous Interest Pe^rt
         modeDropdown.setOnAction(event -> {
             String selectedMode = modeDropdown.getValue();
@@ -246,7 +247,7 @@ public class Main extends Application {
         });
 
         /*
-        * Calculate Results
+        * Calculate Results Button Pressed
         * In retrospect, this should be a function in another file, but now I'm in too deep
         */
         calculateButton.setOnAction(event -> {
@@ -442,7 +443,6 @@ public class Main extends Application {
 
     // Set the textfield text to the new String values
     private void updateTextFields(TextField initialInvestmentField, TextField bondDurationField, TextField expectedApyField, TextField investmentDurationField, ComboBox<String> modeSelect) {
-        // I use "" + double to convert to a string despite the fact that the compiler really should be able to do that for me
         initialInvestmentField.setText(initialInvestmentString);
         bondDurationField.setText(bondDurationString);
         expectedApyField.setText(interestRateString);

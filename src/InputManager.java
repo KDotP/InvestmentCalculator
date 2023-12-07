@@ -4,6 +4,8 @@
  * <p>
  * CSC 1061 - Computer Science II - Java
  *
+ * This file manages user inputs and most math
+ * 
  * @author  Kieran Persoff
  * @version %I%, %G%
  * @since   1.0
@@ -36,7 +38,7 @@ public class InputManager {
             int inputLength = input.toCharArray().length;
 
             // If there's only one character, just return it
-            // If it's a not a 
+            // If it's a not a valid entry anyway
             if (inputLength < 2) {
                 try {
                     return Double.valueOf(sanitizeDouble(input));
@@ -64,9 +66,6 @@ public class InputManager {
             System.out.println("Bad Time Input!");
             return 0;
         }
-        // d = input/365, default
-        // m = input/12
-        // y = input
     }
 
     // Legacy
@@ -95,9 +94,6 @@ public class InputManager {
             System.out.println("Bad Time Input!");
             return 0;
         }
-        // d = 365/input, default
-        // m = 12/input
-        // y = input
     }
 
     int totalRuns(double investmentDuration, double bondDuration) {

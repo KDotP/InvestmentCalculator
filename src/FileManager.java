@@ -3,6 +3,9 @@
  * Investment Calculator
  * <p>
  * CSC 1061 - Computer Science II - Java
+ * 
+ * This file manages most file operations
+ * Save / Loading Files
  *
  * @author  Kieran Persoff
  * @version %I%, %G%
