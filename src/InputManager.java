@@ -35,20 +35,28 @@ public class InputManager {
         try {
             int inputLength = input.toCharArray().length;
 
+            // If there's only one character, just return it
+            // If it's a not a 
             if (inputLength < 2) {
-                return Double.valueOf(input);
+                try {
+                    return Double.valueOf(sanitizeDouble(input));
+                } catch (Exception e) {
+                    // User did not enter a number :(
+                    System.out.println("Bad Time Input!");
+                    return 0d;
+                }
             }
 
             String lastChar = String.valueOf(input.charAt(inputLength - 1)).toLowerCase();
             String subInput = input.substring(0, inputLength - 1);
-            int subInt = Integer.valueOf(subInput);
+            double subDouble = Double.valueOf(sanitizeDouble(subInput));
 
             if (lastChar.equals("d")) {
-                return subInt / 365d;
+                return subDouble / 365d;
             } else if (lastChar.equals("m")) {
-                return subInt / 12d;
+                return subDouble / 12d;
             } else if (lastChar.equals("y")) {
-                return subInt;
+                return subDouble;
             } else {
                 return Double.valueOf(input);
             }

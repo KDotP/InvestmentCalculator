@@ -378,8 +378,6 @@ public class Main extends Application {
             e.printStackTrace();
             return "5";
         }
-        
-        //return "-1%";
     }
 
     // Create a text field with specific parameters because it's done multiple times
@@ -392,6 +390,7 @@ public class Main extends Application {
         return returnField;
     }
 
+    // Popup to load from selected file
     private Stage loadPopup(TextField initialInvestmentField, TextField bondDurationField, TextField expectedApyField, TextField investmentDurationField, ComboBox<String> modeSelect) {
         Stage popup = new Stage();
         popup.setTitle("Load Config from File");
@@ -424,7 +423,7 @@ public class Main extends Application {
                 String[] loadOutput = fileManager.loadFromFile(fieldString);
                 setFromLoad(loadOutput);
             }
-            updateFields(initialInvestmentField, bondDurationField, expectedApyField, investmentDurationField, modeSelect);
+            updateTextFields(initialInvestmentField, bondDurationField, expectedApyField, investmentDurationField, modeSelect);
 
             popup.close();
         });
@@ -442,7 +441,7 @@ public class Main extends Application {
     }
 
     // Set the textfield text to the new String values
-    private void updateFields(TextField initialInvestmentField, TextField bondDurationField, TextField expectedApyField, TextField investmentDurationField, ComboBox<String> modeSelect) {
+    private void updateTextFields(TextField initialInvestmentField, TextField bondDurationField, TextField expectedApyField, TextField investmentDurationField, ComboBox<String> modeSelect) {
         // I use "" + double to convert to a string despite the fact that the compiler really should be able to do that for me
         initialInvestmentField.setText(initialInvestmentString);
         bondDurationField.setText(bondDurationString);
