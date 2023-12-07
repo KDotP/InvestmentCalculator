@@ -1,3 +1,9 @@
+>>> Disclaimer
+All investment involves risk
+This is simply intended as a tool to project potential returns over a given time
+This is not financial advice
+For financial advice, speak to a qualified financial advisor
+
 >>> If Launch Files
 If you've launched run.bat and not gotten any results, it's possible you either have a bad version of java or don't have java installed at all
 To check, go to a command line (cmd on windows) and enter 'java -version' without the quotation marks

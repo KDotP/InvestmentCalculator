@@ -1,6 +1,6 @@
 @echo off
 echo Running Investment Calculator
-echo Ver 1.0.1
+echo Ver 1.0.2
 echo By Kieran Persoff
 echo --- Program Outputs ---
 
